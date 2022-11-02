@@ -64,11 +64,13 @@ func (env *testEnvironment) runComponents() {
 
 	<-p.Ready()
 
-	envars := env.ctx.ConfigController().DumpEnv()
-	sort.Strings(envars)
+	if confCtx, ok := env.ctx.(deps.ConfigController); ok {
+		envars := confCtx.ConfigController().DumpEnv()
+		sort.Strings(envars)
 
-	if _, err := fmt.Fprintln(os.Stdout, strings.Join(envars, "\n")); err != nil {
-		env.ctx.Logger().Error("write-stdout", err)
+		if _, err := fmt.Fprintln(os.Stdout, strings.Join(envars, "\n")); err != nil {
+			env.ctx.Logger().Error("write-stdout", err)
+		}
 	}
 
 	ctx, cancel := context.WithCancel(env.ctx.Context())
