@@ -3,14 +3,13 @@ package testenv
 import (
 	"fmt"
 
-	"git.eth4.dev/golibs/deps"
-	"git.eth4.dev/golibs/execs"
+	"gopkg.in/gomisc/execs.v1"
 )
 
 type (
-	EnvHandler func(ctx deps.ContainersAdapter)
+	EnvHandler func(ctx Context)
 
-	Component func(ctx deps.ContainersAdapter, image string, background bool) ComponentOption
+	Component func(ctx Context, image string, background bool) ComponentOption
 
 	ComponentOption interface {
 		fmt.Stringer
@@ -18,8 +17,10 @@ type (
 	}
 
 	Environment interface {
-		Context() deps.ContainersAdapter
+		Context() Context
 		BeforeRun(EnvHandler)
 		Close()
 	}
+
+	DeferFunc func(ctx Context)
 )

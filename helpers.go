@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"git.eth4.dev/golibs/coders/base58"
-	"git.eth4.dev/golibs/coders/uuid"
+	"gopkg.in/gomisc/coders.v1/base58"
+	"gopkg.in/gomisc/coders.v1/uuid"
 )
 
 func DefaultNamer(prefix ...string) string {

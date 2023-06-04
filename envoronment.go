@@ -9,8 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"git.eth4.dev/golibs/deps"
-	"git.eth4.dev/golibs/execs"
+	"gopkg.in/gomisc/execs.v1"
 )
 
 const (
@@ -18,11 +17,11 @@ const (
 )
 
 type testEnvironment struct {
-	ctx             deps.ContainersAdapter
+	ctx             Context
 	infra, services []ComponentOption
 }
 
-func (env *testEnvironment) Context() deps.ContainersAdapter {
+func (env *testEnvironment) Context() Context {
 	return env.ctx
 }
 
@@ -57,25 +56,25 @@ func (env *testEnvironment) runComponents() {
 		services = append(services, sm)
 	}
 
-	p := execs.Start(execs.NewOrdered(
-		execs.Member{Name: "infrastructure", Runner: execs.NewParallel(infra...)},
-		execs.Member{Name: "services", Runner: execs.NewOrdered(services...)},
-	))
+	p := execs.Start(
+		execs.NewOrdered(
+			execs.Member{Name: "infrastructure", Runner: execs.NewParallel(infra...)},
+			execs.Member{Name: "services", Runner: execs.NewOrdered(services...)},
+		),
+	)
 
 	<-p.Ready()
 
-	if confCtx, ok := env.ctx.(deps.ConfigController); ok {
-		envars := confCtx.ConfigController().DumpEnv()
-		sort.Strings(envars)
+	envVars := env.ctx.Controller().DumpEnv()
+	sort.Strings(envVars)
 
-		if _, err := fmt.Fprintln(os.Stdout, strings.Join(envars, "\n")); err != nil {
-			env.ctx.Logger().Error("write-stdout", err)
-		}
+	if _, err := fmt.Fprintln(os.Stdout, strings.Join(envVars, "\n")); err != nil {
+		env.ctx.Logger().Error("write-stdout", err)
 	}
 
 	ctx, cancel := context.WithCancel(env.ctx.Context())
 	env.ctx.AddDeferFunc(
-		func(ctx deps.Context) {
+		func(ctx Context) {
 			cancel()
 
 			for {
